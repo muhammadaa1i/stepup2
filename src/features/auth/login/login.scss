@@ -1,0 +1,23 @@
+.loginPage {
+    margin-top: 48px;
+    margin-bottom: 48px;
+}
+
+.loginForm {
+    width: 100%;
+
+    .authHint {
+        margin-top: 8px;
+        font-weight: 500;
+    }
+
+    .authLink {
+        display: block;
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    .authLink:hover {
+        text-decoration: underline;
+    }
+}
