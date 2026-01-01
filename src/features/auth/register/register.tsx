@@ -1,8 +1,8 @@
 import { Button, Container, Paper, PasswordInput, Stack, Text, TextInput, Title } from "@mantine/core"
+import { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
-import { useDispatch } from "react-redux"
+import { useNavigate } from "react-router-dom"
 import { useRegisterMutation } from "../authApi"
-import { loginSuccess } from "../authSlice"
 import './register.scss'
 
 type RegisterFormData = {
@@ -12,38 +12,49 @@ type RegisterFormData = {
     confirm_password: string
 }
 
-const RegisterForm = () => {
-    const dispatch = useDispatch()
-    const [registerUser] = useRegisterMutation()
+interface RegisterFormProps {
+    redirectTo?: string
+    onSuccess?: () => void
+    containerSize?: number
+}
+
+const RegisterForm = ({ redirectTo, onSuccess, containerSize = 420 }: RegisterFormProps) => {
+    const [registerUser, { isLoading, isSuccess }] = useRegisterMutation()
+    const navigate = useNavigate()
     const { register, handleSubmit, watch, formState: { errors } } = useForm<RegisterFormData>()
     const password = watch('password')
+    const [errorMessage, setErrorMessage] = useState('')
+
+    useEffect(() => {
+        if (isSuccess) {
+            onSuccess?.()
+            navigate(redirectTo || '/')
+        }
+    }, [isSuccess, redirectTo, onSuccess, navigate])
 
     const onSubmit = async (data: RegisterFormData) => {
         try {
-            const response = await registerUser(data).unwrap()
-            dispatch(loginSuccess(response))
-        } catch (error) {
-            console.error('Register failed:', error)
+            await registerUser(data).unwrap()
+            setErrorMessage('')
+        } catch (err: any) {
+            setErrorMessage(err?.data?.message || 'Registration failed')
         }
     }
 
     return (
-        <Container size={420} className="registerPage">
+        <Container size={containerSize} className="registerPage">
             <Title order={2} ta="center" mb="md">Create account</Title>
 
-            <Paper withBorder shadow="sm" p="lg" radius="md">
+            <Paper withBorder shadow="sm" p="lg" radius="md" className="registerPaper">
                 <form className="registerForm" onSubmit={handleSubmit(onSubmit)}>
                     <Stack gap="sm">
                         <TextInput
                             label="Name"
                             placeholder="Your name"
+                            type="text"
                             {...register('name', { required: 'Name is required' })}
+                            error={errors.name?.message}
                         />
-                        {errors.name?.message && (
-                            <Text c="red" size="xs">
-                                {errors.name.message}
-                            </Text>
-                        )}
 
                         <TextInput
                             label="Phone"
@@ -51,12 +62,8 @@ const RegisterForm = () => {
                             type="tel"
                             inputMode="numeric"
                             {...register('phone', { required: 'Phone is required' })}
+                            error={errors.phone?.message}
                         />
-                        {errors.phone?.message && (
-                            <Text c="red" size="xs">
-                                {errors.phone.message}
-                            </Text>
-                        )}
 
                         <PasswordInput
                             label="Password"
@@ -66,13 +73,8 @@ const RegisterForm = () => {
                                 required: 'Password is required',
                                 minLength: { value: 6, message: 'Min 6 characters' }
                             })}
+                            error={errors.password?.message}
                         />
-                        {errors.password?.message && (
-                            <Text c="red" size="xs">
-                                {errors.password.message}
-                            </Text>
-                        )}
-
                         <PasswordInput
                             label="Confirm password"
                             placeholder="Confirm password"
@@ -80,14 +82,12 @@ const RegisterForm = () => {
                                 required: 'Confirm password is required',
                                 validate: (value) => value === password || 'Passwords do not match'
                             })}
+                            error={errors.confirm_password?.message}
                         />
-                        {errors.confirm_password?.message && (
-                            <Text c="red" size="xs">
-                                {errors.confirm_password.message}
-                            </Text>
-                        )}
 
-                        <Button type="submit" fullWidth size="md">
+                        {errorMessage && <Text c="red" size="sm">{errorMessage}</Text>}
+
+                        <Button loading={isLoading} type="submit" fullWidth size="md">
                             Register
                         </Button>
                     </Stack>

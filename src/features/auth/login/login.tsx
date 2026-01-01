@@ -1,8 +1,8 @@
-import { Anchor, Button, Container, Paper, PasswordInput, Stack, TextInput, Title } from "@mantine/core"
+import { Anchor, Button, Container, Paper, PasswordInput, Stack, Text, TextInput, Title } from "@mantine/core"
+import { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
-import { useDispatch } from "react-redux"
-import { Link } from "react-router-dom"
-import { loginSuccess } from "../authSlice"
+import { Link, useNavigate } from "react-router-dom"
+import { useLoginMutation } from "../authApi"
 import './login.scss'
 
 type LoginFormData = {
@@ -10,24 +10,44 @@ type LoginFormData = {
   password: string
 }
 
-export default function LoginForm() {
-  const dispatch = useDispatch()
+interface LoginFormProps {
+  redirectTo?: string
+  onSuccess?: () => void
+  showRegisterLink?: boolean
+  registerPath?: string  // If provided, show link; if undefined, hide it
+  containerSize?: number
+}
+
+export default function LoginForm({
+  redirectTo = '/',
+  onSuccess,
+  registerPath = '/register',
+  containerSize = 420,
+}: LoginFormProps) {
+  const [login, { isLoading, isSuccess }] = useLoginMutation()
+  const [errorMessage, setErrorMessage] = useState('')
+  const navigate = useNavigate()
+
   const { register, handleSubmit, formState: { errors } } = useForm<LoginFormData>()
 
-  const onSubmit = (data: LoginFormData) => {
-    const response = {
-      user: {
-        name: 'User',
-        phone: data.phone,
-      },
-      accessToken: 'dummy-token',
+  useEffect(() => {
+    if (isSuccess) {
+      onSuccess?.()
+      navigate(redirectTo)
     }
+  }, [isSuccess, navigate, onSuccess, redirectTo])
 
-    dispatch(loginSuccess(response))
+  const onSubmit = async (data: LoginFormData) => {
+    try {
+      await login(data).unwrap()
+      setErrorMessage('')
+    } catch (err: any) {
+      setErrorMessage(err?.data?.message || 'Login failed')
+    }
   }
 
   return (
-    <Container size={420} className="loginPage">
+    <Container size={containerSize} className="loginPage">
       <Title order={2} ta="center" mb="md">Welcome back</Title>
 
       <Paper withBorder shadow="sm" p="lg" radius="md">
@@ -51,16 +71,23 @@ export default function LoginForm() {
               {...register('password', { required: 'Password is required' })}
             />
 
-            <Button type="submit" fullWidth size="md">
+            {errorMessage && <Text c="red" size="sm">{errorMessage}</Text>}
+
+            <Button type="submit" fullWidth size="md" loading={isLoading}>
               Login
             </Button>
 
-            <Anchor component={Link} to="/register" className="authHint" size="sm" c="dimmed" ta="center">
-              Don't have account yet?
-            </Anchor>
-            <Anchor className="authLink" ta="center" component={Link} to="/register">
-              Go to register
-            </Anchor>
+            {registerPath && (
+              <>
+                <Anchor component={Link} to={registerPath} className="authHint" size="sm" c="dimmed" ta="center">
+                  Don't have account yet?
+                </Anchor>
+
+                <Anchor className="authLink" ta="center" component={Link} to={registerPath}>
+                  Go to register
+                </Anchor>
+              </>
+            )}
           </Stack>
         </form>
       </Paper>
