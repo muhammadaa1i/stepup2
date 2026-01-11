@@ -1,8 +1,8 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { loginSuccess, logout, type User } from "./authSlice";
+import { tokenStorage } from "../services/tokenStorage";
+import { loginSuccess, logout, type User } from "../store/authSlice";
 
-const BASE_URL = 'http://localhost:3000/api/'
-const ACCESS_TOKEN_KEY = 'accessToken'
+const BASE_URL = 'https://market-backend-xi.vercel.app/api'
 
 export interface RegisterPayload {
     name: string
@@ -28,13 +28,10 @@ export interface AuthResponse {
     data: AuthData
 }
 
-const getAccessToken = (payload: AuthData): string =>
-    payload.accessToken || ''
-
 const baseQuery = fetchBaseQuery({
     baseUrl: BASE_URL,
     prepareHeaders: (headers) => {
-        const token = localStorage.getItem(ACCESS_TOKEN_KEY)
+        const token = tokenStorage.getAccessToken()
         if (token) headers.set('Authorization', `Bearer ${token}`)
         return headers
     }
@@ -54,8 +51,11 @@ export const authApi = createApi({
                 try {
                     const { data } = await queryFulfilled
                     const authData = data.data
-                    const accessToken = getAccessToken(authData)
-                    dispatch(loginSuccess({ user: authData.user, accessToken }))
+
+                    tokenStorage.setAccessToken(authData.accessToken)
+                    tokenStorage.setRefreshToken(authData.refreshToken)
+
+                    dispatch(loginSuccess({ user: authData.user, accessToken: authData.accessToken }))
                 } catch { }
             }
         }),
@@ -69,8 +69,11 @@ export const authApi = createApi({
             async onQueryStarted(_, { queryFulfilled, dispatch }) {
                 const { data } = await queryFulfilled
                 const authData = data.data
-                const accessToken = getAccessToken(authData)
-                dispatch(loginSuccess({ user: authData.user, accessToken }))
+
+                tokenStorage.setAccessToken(authData.accessToken)
+                tokenStorage.setRefreshToken(authData.refreshToken)
+
+                dispatch(loginSuccess({ user: authData.user, accessToken: authData.accessToken }))
             }
         }),
 
@@ -83,8 +86,11 @@ export const authApi = createApi({
                 try {
                     const { data } = await queryFulfilled
                     const authData = data.data
-                    const accessToken = getAccessToken(authData)
-                    dispatch(loginSuccess({ user: authData.user, accessToken }))
+
+                    tokenStorage.setAccessToken(authData.accessToken)
+                    tokenStorage.setRefreshToken(authData.refreshToken)
+
+                    dispatch(loginSuccess({ user: authData.user, accessToken: authData.accessToken }))
                 } catch {
                     dispatch(logout())
                 }

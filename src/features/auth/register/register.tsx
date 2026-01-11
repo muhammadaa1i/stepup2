@@ -2,7 +2,7 @@ import { Button, Container, Paper, PasswordInput, Stack, Text, TextInput, Title 
 import { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useNavigate } from "react-router-dom"
-import { useRegisterMutation } from "../authApi"
+import { useRegisterMutation } from "../api/authApi"
 import './register.scss'
 
 type RegisterFormData = {

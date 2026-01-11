@@ -1,7 +1,5 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit"
 
-const ACCESS_TOKEN_KEY = 'accessToken'
-
 export interface User {
     id?: string
     name: string
@@ -15,12 +13,10 @@ interface AuthState {
     isAuthenticated: boolean
 }
 
-const token = localStorage.getItem(ACCESS_TOKEN_KEY)
-
 const initialState: AuthState = {
     user: null,
-    accessToken: token,
-    isAuthenticated: !!token
+    accessToken: null,
+    isAuthenticated: false
 }
 
 const authSlice = createSlice({
@@ -34,16 +30,12 @@ const authSlice = createSlice({
             state.user = action.payload.user
             state.accessToken = action.payload.accessToken
             state.isAuthenticated = true
-
-            localStorage.setItem(ACCESS_TOKEN_KEY, action.payload.accessToken)
         },
 
         logout: (state) => {
             state.user = null
             state.accessToken = null
             state.isAuthenticated = false
-
-            localStorage.removeItem(ACCESS_TOKEN_KEY)
         }
     }
 })

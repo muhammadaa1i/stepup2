@@ -2,7 +2,7 @@ import App from "@/App";
 import CartPage from "@/pages/cart/cart";
 import HomePage from "@/pages/home";
 import LoginPage from "@/features/auth/login/login";
-import ProductPage from "@/pages/products/ProductPage";
+import ProductPage from "@/pages/products/product";
 import { createBrowserRouter } from "react-router-dom";
 import Register from "../features/auth/register/register";
 

@@ -2,7 +2,7 @@ import { Anchor, Button, Container, Paper, PasswordInput, Stack, Text, TextInput
 import { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { Link, useNavigate } from "react-router-dom"
-import { useLoginMutation } from "../authApi"
+import { useLoginMutation } from "../api/authApi"
 import './login.scss'
 
 type LoginFormData = {
@@ -14,7 +14,7 @@ interface LoginFormProps {
   redirectTo?: string
   onSuccess?: () => void
   showRegisterLink?: boolean
-  registerPath?: string  // If provided, show link; if undefined, hide it
+  registerPath?: string
   containerSize?: number
 }
 
