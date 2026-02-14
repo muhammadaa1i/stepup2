@@ -1,5 +1,7 @@
 import { createTheme, MantineProvider } from '@mantine/core'
 import '@mantine/core/styles.css'
+import { Notifications } from '@mantine/notifications'
+import '@mantine/notifications/styles.css'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { Provider } from 'react-redux'
@@ -27,6 +29,7 @@ const theme = createTheme({
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <MantineProvider theme={theme}>
+      <Notifications position='top-center' autoClose={5000} />
       <Provider store={store}>
         <RouterProvider router={router} />
       </Provider>

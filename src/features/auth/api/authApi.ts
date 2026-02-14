@@ -1,35 +1,11 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { config } from "../../../config/config";
 import { tokenStorage } from "../services/tokenStorage";
-import { loginSuccess, logout, type User } from "../store/authSlice";
-
-const BASE_URL = 'https://market-backend-xi.vercel.app/api'
-
-export interface RegisterPayload {
-    name: string
-    phone: string
-    password: string
-    confirm_password: string
-}
-
-export interface LoginPayload {
-    phone: string
-    password: string
-}
-
-export interface AuthData {
-    user: User
-    accessToken: string
-    refreshToken: string
-}
-
-export interface AuthResponse {
-    success: boolean
-    message: string
-    data: AuthData
-}
+import { loginSuccess, logout } from "../slice/authSlice";
+import type { AuthResponse, LoginPayload, RegisterPayload } from "../types";
 
 const baseQuery = fetchBaseQuery({
-    baseUrl: BASE_URL,
+    baseUrl: config.apiBaseUrl,
     prepareHeaders: (headers) => {
         const token = tokenStorage.getAccessToken()
         if (token) headers.set('Authorization', `Bearer ${token}`)
@@ -49,14 +25,16 @@ export const authApi = createApi({
             }),
             async onQueryStarted(_, { queryFulfilled, dispatch }) {
                 try {
-                    const { data } = await queryFulfilled
-                    const authData = data.data
-
-                    tokenStorage.setAccessToken(authData.accessToken)
-                    tokenStorage.setRefreshToken(authData.refreshToken)
-
-                    dispatch(loginSuccess({ user: authData.user, accessToken: authData.accessToken }))
-                } catch { }
+                    const { data: response } = await queryFulfilled
+                    tokenStorage.setAccessToken(response.data.accessToken)
+                    tokenStorage.setRefreshToken(response.data.refreshToken)
+                    dispatch(loginSuccess({
+                        user: response.data.user,
+                        accessToken: response.data.accessToken
+                    }))
+                } catch (error) {
+                    console.error('Registration failed:', error)
+                }
             }
         }),
 
@@ -67,13 +45,17 @@ export const authApi = createApi({
                 body
             }),
             async onQueryStarted(_, { queryFulfilled, dispatch }) {
-                const { data } = await queryFulfilled
-                const authData = data.data
-
-                tokenStorage.setAccessToken(authData.accessToken)
-                tokenStorage.setRefreshToken(authData.refreshToken)
-
-                dispatch(loginSuccess({ user: authData.user, accessToken: authData.accessToken }))
+                try {
+                    const { data: response } = await queryFulfilled
+                    tokenStorage.setAccessToken(response.data.accessToken)
+                    tokenStorage.setRefreshToken(response.data.refreshToken)
+                    dispatch(loginSuccess({
+                        user: response.data.user,
+                        accessToken: response.data.accessToken
+                    }))
+                } catch (error) {
+                    console.error('Login failed:', error)
+                }
             }
         }),
 
@@ -81,17 +63,21 @@ export const authApi = createApi({
             query: () => ({
                 url: 'auth/refresh',
                 method: 'POST'
+            })
+        }),
+
+        logout: builder.mutation<void, void>({
+            query: () => ({
+                url: 'auth/logout',
+                method: 'POST'
             }),
             async onQueryStarted(_, { dispatch, queryFulfilled }) {
                 try {
-                    const { data } = await queryFulfilled
-                    const authData = data.data
-
-                    tokenStorage.setAccessToken(authData.accessToken)
-                    tokenStorage.setRefreshToken(authData.refreshToken)
-
-                    dispatch(loginSuccess({ user: authData.user, accessToken: authData.accessToken }))
-                } catch {
+                    await queryFulfilled
+                } catch (error) {
+                    console.error("Logout failed:", error)
+                } finally {
+                    tokenStorage.clearTokens()
                     dispatch(logout())
                 }
             }
@@ -99,4 +85,4 @@ export const authApi = createApi({
     })
 })
 
-export const { useRegisterMutation, useLoginMutation } = authApi    
+export const { useRegisterMutation, useLoginMutation, useRefreshMutation, useLogoutMutation } = authApi

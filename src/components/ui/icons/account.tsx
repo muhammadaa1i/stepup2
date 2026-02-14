@@ -1,5 +1,7 @@
 import { ActionIcon, Menu } from '@mantine/core';
 import { IconUser } from '@tabler/icons-react';
+import { useLogoutMutation } from '../../../features/auth/api/authApi';
+import { useNavigate } from 'react-router-dom';
 
 type Props = {
   menuOpen: boolean
@@ -7,6 +9,20 @@ type Props = {
 }
 
 export default function AccountMenu({ menuOpen, toggleMenu }: Props) {
+  const [logoutUser] = useLogoutMutation()
+  const navigate = useNavigate()
+
+  const handleLogout = async () => {
+    try {
+      await logoutUser().unwrap()
+    } catch (err) {
+      console.log('Logout error', err)
+    }
+    finally {
+      navigate('/')
+    }
+  }
+
   return (
     <Menu opened={menuOpen} onChange={toggleMenu} position="bottom-end">
       <Menu.Target>
@@ -16,8 +32,7 @@ export default function AccountMenu({ menuOpen, toggleMenu }: Props) {
           size={36}
           color="#000"
           style={{ cursor: 'pointer' }}
-          aria-label="Account menu"
-        >
+          aria-label="Account menu">
           <IconUser style={{ width: '70%', height: '70%' }} stroke={1.5} />
         </ActionIcon>
       </Menu.Target>
@@ -25,7 +40,7 @@ export default function AccountMenu({ menuOpen, toggleMenu }: Props) {
       <Menu.Dropdown>
         <Menu.Item>Profile</Menu.Item>
         <Menu.Item>Orders</Menu.Item>
-        <Menu.Item color="red">Logout</Menu.Item>
+        <Menu.Item onClick={handleLogout} color="red">Logout</Menu.Item>
       </Menu.Dropdown>
     </Menu>
   )

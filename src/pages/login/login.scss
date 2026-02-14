@@ -1,20 +1,20 @@
 .loginPage {
     margin-top: 48px;
     margin-bottom: 48px;
-}
-
-.loginForm {
-    width: 100%;
 
     .authHint {
-        margin-top: 8px;
+        display: block;
+        margin-top: 16px;
         font-weight: 500;
+        text-align: center;
     }
 
     .authLink {
         display: block;
+        margin-top: 4px;
         font-weight: 600;
         text-decoration: none;
+        text-align: center;
     }
 
     .authLink:hover {

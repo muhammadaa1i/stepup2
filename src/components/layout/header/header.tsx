@@ -2,19 +2,10 @@ import SignInBtn from '@/components/ui/buttons/signInBtn';
 import './header.scss'
 import Account from '@/components/ui/icons/account';
 import Cart from '@/components/ui/icons/cart';
-import { useState } from 'react';
-import { useSelector } from 'react-redux';
-import type { RootState } from '@/store/store';
+import { useHeader } from '../hooks/useHeader';
 
 export default function Header() {
-  const cartItemsCount = useSelector((state: RootState) =>
-    state.cart.items.reduce((total, item) => total + item.quantity, 0)
-  )
-
-  const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated)
-
-  const [menuOpen, setMenuOpen] = useState(false)
-  const toggleMenu = () => setMenuOpen((prev) => !prev)
+  const { menuOpen, toggleMenu, cartItemsCount, isAuthenticated } = useHeader()
 
   return (
     <header>
@@ -30,5 +21,5 @@ export default function Header() {
         )}
       </div>
     </header>
-  );
+  )
 }
